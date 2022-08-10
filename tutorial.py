@@ -40,15 +40,15 @@ class Projectile:
         self.y += self.y_vel
         self.alpha = max(0, self.alpha - self.ALPHA_DECREMENT)
 
-    def draw(self):
+    def draw(self,win):
         self.draw_rect_alpha(win, self.colour + (self.alpha,), (self.x, self.y, self.WIDTH, self.HEIGHT))
 
 
     @staticmethod
     def draw_rect_alpha(surface, colour, rect):
-        shape_surf = pygame.SURFACE(pygame.Rect(rect).size, pygame.SRCALPHA)
+        shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
         pygame.draw.rect(shape_surf, colour, shape_surf.get_rect())
-        surface.blit(shape_surf.rect) 
+        surface.blit(shape_surf,rect) 
 
 
 
@@ -72,6 +72,7 @@ class Fireworks:
         num_projectiles = random.randrange(self.MIN_PROJECTILE, self.MAX_PROJECTILE)
         self.create_circular_projectile(num_projectiles)
 
+
     def create_circular_projectile(self, num_projectiles):
         angle_dif = math.pi*2/num_projectiles
         current_angle = 0
@@ -91,6 +92,7 @@ class Fireworks:
 
         projectiles_to_remove = []
         for projectile in self.projectiles:
+            
             projectile.move()
 
             if projectile.x >= max_width or projectile.x < 0:
@@ -100,12 +102,13 @@ class Fireworks:
 
         for projectile in projectiles_to_remove:
             self.projectiles.remove(projectile)
+        count=len(self.projectiles)
 
     def draw(self, win):
         if not self.exploded:
             pygame.draw.circle(win, self.colour, (self.x, self.y), self.RADIUS)
-            for projectile in self.projectiles:
-                projectile.draw(win)       
+        for projectile in self.projectiles:
+            projectile.draw(win)       
 
 class Launcher:
     WIDTH = 20
