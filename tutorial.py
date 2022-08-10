@@ -1,12 +1,13 @@
 import pygame
 import time
 import random
+import math
 pygame.init()
 
 WIDTH,HEIGHT = 800,600
 
 win = pygame.display.set_mode((WIDTH,HEIGHT))
-pygame.display.set_caption("Sharmeen Fireworks!")
+pygame.display.set_caption("Sharmeen's Fireworks!")
 
 FPS = 60
 
@@ -22,7 +23,34 @@ COLOURS = [
 ]
 
 class Projectile:
-    pass
+    WIDTH = 5
+    HEIGHT = 10
+    ALPHA_DECREMENT = 3
+
+    def __init__(self, x, y, x_vel, y_vel, colour):
+        self.x = x
+        self.y = y
+        self.x_vel = x_vel
+        self.y_vel = y_vel
+        self.colour = colour
+        self.alpha = 255
+
+    def move(self):
+        self.x += self.x_vel
+        self.y += self.y_vel
+        self.alpha = max(0, self.alpha - self.ALPHA_DECREMENT)
+
+    def draw(self):
+        self.draw_rect_alpha(win, self.colour + (self.alpha,), (self.x, self.y, self.WIDTH, self.HEIGHT))
+
+
+    @staticmethod
+    def draw_rect_alpha(surface, colour, rect):
+        shape_surf = pygame.SURFACE(pygame.Rect(rect).size, pygame.SRCALPHA)
+        pygame.draw.rect(shape_surf, colour, shape_surf.get_rect())
+        surface.blit(shape_surf.rect) 
+
+
 
 class Fireworks:
     RADIUS = 10
@@ -41,12 +69,37 @@ class Fireworks:
 
     def explode(self):
         self.exploded = True
+        num_projectiles = random.randrange(self.MIN_PROJECTILE, self.MAX_PROJECTILE)
+        self.create_circular_projectile(num_projectiles)
+
+    def create_circular_projectile(self, num_projectiles):
+        angle_dif = math.pi*2/num_projectiles
+        current_angle = 0
+        vel = random.randrange(self.PROJECTILE_VEL - 1, self.PROJECTILE_VEL + 1)
+        for _ in range(num_projectiles):
+            x_vel = math.sin(current_angle) * vel
+            y_vel = math.cos(current_angle) * vel
+            colour = random.choice(COLOURS)
+            self.projectiles.append(Projectile(self.x, self.y, x_vel, y_vel, colour))
+            current_angle += angle_dif
 
     def move(self, max_width, max_height):
         if not self.exploded:
             self.y += self.y_vel
             if self.y <= self.explode_height:
-                self.explode()      
+                self.explode() 
+
+        projectiles_to_remove = []
+        for projectile in self.projectiles:
+            projectile.move()
+
+            if projectile.x >= max_width or projectile.x < 0:
+                projectiles_to_remove.append(projectile)
+            elif projectile.y >= max_height or projectile.y < 0:
+                    projectiles_to_remove.append(projectile)
+
+        for projectile in projectiles_to_remove:
+            self.projectiles.remove(projectile)
 
     def draw(self, win):
         if not self.exploded:
@@ -94,7 +147,6 @@ class Launcher:
 
         for firework in fireworks_to_remove:
             self.fireworks.remove(firework)
-
 
 def draw(Launchers):
     win.fill('black')
