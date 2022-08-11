@@ -70,8 +70,11 @@ class Fireworks:
     def explode(self):
         self.exploded = True
         num_projectiles = random.randrange(self.MIN_PROJECTILE, self.MAX_PROJECTILE)
-        self.create_circular_projectile(num_projectiles)
 
+        if random.randint(0,1) == 0:
+            self.create_circular_projectile(num_projectiles)
+        else:
+            self.create_star_projectiles()
 
     def create_circular_projectile(self, num_projectiles):
         angle_dif = math.pi*2/num_projectiles
@@ -83,6 +86,19 @@ class Fireworks:
             colour = random.choice(COLOURS)
             self.projectiles.append(Projectile(self.x, self.y, x_vel, y_vel, colour))
             current_angle += angle_dif
+
+    def create_star_projectiles(self):
+        angle_diff = math.pi/4
+        current_angle = 0
+        num_projectiles = 32
+        for i in range(1, (num_projectiles + 1)):
+            vel = self.PROJECTILE_VEL + (i % (num_projectiles / 8))
+            x_vel = math.sin(current_angle) * vel
+            y_vel = math.cos(current_angle) * vel
+            colour = random.choice(COLOURS)
+            self.projectiles.append(Projectile(self.x, self.y, x_vel, y_vel, colour))
+            if i % (num_projectiles / 8) ==0:
+                current_angle += angle_diff
 
     def move(self, max_width, max_height):
         if not self.exploded:
@@ -163,7 +179,8 @@ def main():
     run = True
     clock = pygame.time.Clock()
 
-    launchers = [Launcher(100, HEIGHT - Launcher.HEIGHT, 3000)]
+    launchers = [Launcher(100, HEIGHT - Launcher.HEIGHT, 3000),Launcher(300, HEIGHT - Launcher.HEIGHT, 4000),
+                Launcher(500, HEIGHT - Launcher.HEIGHT, 2000),Launcher(700, HEIGHT - Launcher.HEIGHT, 5000)]
 
     while run :
         clock.tick(FPS)
